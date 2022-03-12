@@ -2,8 +2,8 @@ import java.util.ArrayList;
 
 public class Question extends Post {
 
-    boolean answered;
-    ArrayList<String> answers;
+    boolean answered; // providing the status of the question (whether the question has been answered)
+    ArrayList<String> answers; // answers added to this question
 
     /**
      * Constructor of Question
@@ -11,7 +11,7 @@ public class Question extends Post {
      * @param header the summary of this question
      */
     public Question(User poster, String header, String UID) {
-        // TODO
+        super(poster, header, UID);
     }
 
     /**
@@ -24,15 +24,25 @@ public class Question extends Post {
      * @param PEID the unique identification ID of course ID
      */
     public Question(User poster, String header, String question, String keyword, String PEID, String UID){
-        // TODO
+        super(poster, header, question, keyword, PEID, UID);
+
     }
 
     /**
      * getter method for text
      */
     public String getText(User u) throws OperationDeniedException {
-        // TODO
-        return null;
+        if (this.isPrivate){
+            if (u instanceof Tutor || u instanceof Instructor || this.poster == u){ // TODO: is this.poster==u is correct
+                return this.text;
+            }
+            else {
+                throw new OperationDeniedException();
+            }
+        }
+        else {
+            return this.text;
+        }
     }
 
     /**
@@ -41,8 +51,12 @@ public class Question extends Post {
      * @return the status of the question
      */
     public String getStatus(){
-        // TODO
-        return null;
+        if (answered){
+            return "Resolved";
+        }
+        else {
+            return "Unresolved";
+        }
     }
 
     /**
@@ -51,8 +65,9 @@ public class Question extends Post {
      */
     @Override
     public String toString() {
-        // TODO
-        return null;
+        String necessaryInfo;
+        necessaryInfo = this.text;
+        return necessaryInfo; // TODO: change it later
     }
 
     /**
@@ -62,7 +77,8 @@ public class Question extends Post {
      * @return whether the action is successful
      */
     public boolean answerQuestion(String s) {
-        // TODO
-        return false;
+        this.answers.add(s);
+        this.answered = true;
+        return true;
     }
 }

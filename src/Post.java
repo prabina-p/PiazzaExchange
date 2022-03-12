@@ -30,8 +30,8 @@ public abstract class Post implements Comparable<Post> {
         this.parentPEID = null;
         this.endorsementCount = 0;
         this.endorsedByCourseStaff = false;
-        this.isPrivate = false; //verify
-        this.date = LocalDate.now(); //verify
+        this.isPrivate = false;
+        this.date = LocalDate.now(); // TODO: verify
         this.priority = 0;
     }
 
@@ -45,11 +45,11 @@ public abstract class Post implements Comparable<Post> {
         this.keyword = keyword;
         this.UID = UID;
         this.parentPEID = PEID;
-        this.date = LocalDate.now(); //verify
+        this.date = LocalDate.now(); // TODO: verify
         this.priority = 0;
         this.endorsementCount = 0;
         this.endorsedByCourseStaff = false;
-        this.isPrivate = false; //verify
+        this.isPrivate = false;
     }
 
     /**
@@ -76,7 +76,7 @@ public abstract class Post implements Comparable<Post> {
      * @param newDate the new date we are setting the post to
      */
     public void setDate(LocalDate newDate) {
-        this.date = newDate; //verify; check write-up
+        this.date = newDate; // TODO: verify; check write-up
     }
 
     public User getPoster() {
@@ -90,7 +90,7 @@ public abstract class Post implements Comparable<Post> {
     public String toString() {
         String necessaryInfo;
         necessaryInfo = this.text;
-        return necessaryInfo; //change it later
+        return necessaryInfo; // TODO: change it later
     }
 
     /**
@@ -103,7 +103,7 @@ public abstract class Post implements Comparable<Post> {
         int thisPriority = this.calculatePriority();
         int otherPriority = other.calculatePriority();
         if (thisPriority < otherPriority){
-            return -1; // verify
+            return -1; // TODO: verify
         }
         else if (thisPriority == otherPriority){
             return 0;
