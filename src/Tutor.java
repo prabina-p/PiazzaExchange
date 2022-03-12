@@ -2,31 +2,45 @@ public class Tutor extends User{
 
 
     public Tutor(String PID, String username){
-        // TODO
+        super(PID, username);
 
     }
 
     public boolean answerQuestion(Post p, String response){
-        // TODO
-        return false;
+        if (!(p instanceof Question)){
+            return false;
+        }
+        ((Question) p).answerQuestion(response);
+        if (!this.posts.contains(p)) {
+            this.posts.add(p);
+        } //TODO: need to add some more when doing PE
+        this.numOfPostsAnswered++; //TODO: if question is alr answered, do we still answer it?
+        return true;
     }
 
     @Override
     public String displayName() {
-        // TODO
-        return null;
+        return "Tutor: " + this.username + ", PID: " + this.PID;
     }
 
     @Override
     public boolean endorsePost(Post p){
-        // TODO
+        if (!p.endorsedByCourseStaff){
+            p.endorsementCount++;
+            p.poster.numOfEndorsement++;
+            p.endorsedByCourseStaff = true;
+            return true;
+        }
         return false;
     }
 
     @Override
     public boolean editPost(Post p, String newText) {
-        //TODO
-        return false;
+        p.editText(newText);
+        if (!this.posts.contains(p)){
+            this.numOfPostSubmitted++; // TODO: should we add p to posts?
+        }
+        return true;
     }
 
     /**
@@ -38,9 +52,13 @@ public class Tutor extends User{
      * @throws OperationDeniedException when the operation is denied
      */
     public Post[] getTopKUrgentQuestion(PiazzaExchange pe, int k) throws OperationDeniedException {
-        // TODO
-        return null;
+        Post[] arr = new Post[1]; // TODO: in the writeup, method signature is flipped
+        if (k == 1){
+            arr[0] = pe.computeMostUrgentQuestion();
+            return arr;
+        }
+        else {
+            return pe.computeTopKUrgentQuestion(k);
+        }
     }
-
-
 }

@@ -319,7 +319,7 @@ public class PiazzaExchange {
      */
     public Post[] computeKSimilarPosts(String keyword, int k) {
         // TODO
-        return null
+        return null;
     }
 
     /**
