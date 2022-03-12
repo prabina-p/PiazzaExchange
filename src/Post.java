@@ -3,17 +3,17 @@ import java.util.ArrayList;
 
 public abstract class Post implements Comparable<Post> {
 
-    String UID;
-    String parentPEID;
-    int endorsementCount;
-    boolean endorsedByCourseStaff;
-    private String header;
-    protected String text;
-    boolean isPrivate;
-    User poster;
-    LocalDate date;
-    int priority;
-    private String keyword;
+    String UID; // unique identifier for each post
+    String parentPEID; // course ID that the post is created
+    int endorsementCount; // number of endorsements of the post (any type of User can contribute to this)
+    boolean endorsedByCourseStaff; // whether a course staff endorses the post (Only Tutor and Instructor can change this)
+    private String header; // header of the post
+    protected String text; // responsible for the content both Note and Question subclass
+    boolean isPrivate; // whether a post is created private
+    User poster; // user that creates the post
+    LocalDate date; // date when the post is created
+    int priority; // the urgency, in a decimal number, for the post to be answered by an instructor/tutor. The higher, the larger extent of priority/urgency
+    private String keyword; // keyword associated with this post
 
     /**
      * Constructor for Post
@@ -22,14 +22,34 @@ public abstract class Post implements Comparable<Post> {
      * @param header the header of the post
      */
     public Post(User poster, String header, String UID) {
-        // TODO
+        this.UID = UID;
+        this.poster = poster;
+        this.header = header;
+        this.text = "";
+        this.keyword = null;
+        this.parentPEID = null;
+        this.endorsementCount = 0;
+        this.endorsedByCourseStaff = false;
+        this.isPrivate = false; //verify
+        this.date = LocalDate.now(); //verify
+        this.priority = 0;
     }
 
     /**
      * Overloaded constructor for Post
      */
     public Post(User poster, String header, String text, String keyword, String PEID, String UID) {
-        // TODO
+        this.poster = poster;
+        this.header = header;
+        this.text = text;
+        this.keyword = keyword;
+        this.UID = UID;
+        this.parentPEID = PEID;
+        this.date = LocalDate.now(); //verify
+        this.priority = 0;
+        this.endorsementCount = 0;
+        this.endorsedByCourseStaff = false;
+        this.isPrivate = false; //verify
     }
 
     /**
@@ -37,8 +57,7 @@ public abstract class Post implements Comparable<Post> {
      * @return the keyword of the post
      */
     public String getKeyword() {
-        // TODO
-        return null;
+        return this.keyword;
     }
 
     /**
@@ -48,8 +67,7 @@ public abstract class Post implements Comparable<Post> {
     public abstract String getText(User u) throws OperationDeniedException;
 
     public LocalDate getDate() {
-        // TODO
-        return null;
+        return this.date;
     }
 
     /**
@@ -58,21 +76,21 @@ public abstract class Post implements Comparable<Post> {
      * @param newDate the new date we are setting the post to
      */
     public void setDate(LocalDate newDate) {
-        // TODO
+        this.date = newDate; //verify; check write-up
     }
 
     public User getPoster() {
-        // TODO
-        return null;
+        return this.poster;
     }
 
     public void editText(String text) {
-        // TODO
+        this.text = text;
     }
 
     public String toString() {
-        // TODO
-        return null;
+        String necessaryInfo;
+        necessaryInfo = this.text;
+        return necessaryInfo; //change it later
     }
 
     /**
@@ -82,12 +100,23 @@ public abstract class Post implements Comparable<Post> {
      * @return whether this post is larger than the other post
      */
     public int compareTo(Post other){
-        // TODO
-        return 0;
+        int thisPriority = this.calculatePriority();
+        int otherPriority = other.calculatePriority();
+        if (thisPriority < otherPriority){
+            return -1; // verify
+        }
+        else if (thisPriority == otherPriority){
+            return 0;
+        }
+        else {
+            return 1;
+        }
     }
 
     public int calculatePriority() {
-        return this.endorsementCount+(int)(this.date.until(LocalDate.now()).getDays()/3.0);
+        int updatedPriority = this.endorsementCount+(int)(this.date.until(LocalDate.now()).getDays()/3.0);
+        this.priority = updatedPriority;
+        return this.priority;
     }
 
 

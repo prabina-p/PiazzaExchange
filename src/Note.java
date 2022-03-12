@@ -10,7 +10,7 @@ public class Note extends Post{
 
     @Override
     public String getText(User u){
-        return null;
+        return this.text; //verify
     }
 
     @Override
