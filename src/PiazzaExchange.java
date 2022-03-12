@@ -1,3 +1,5 @@
+import org.junit.Test;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,14 +8,14 @@ import java.util.LinkedList;
 
 public class PiazzaExchange {
 
-    String courseID;
-    Instructor instructor;
-    ArrayList<User> users;
-    ArrayList<Post> posts;
-    ArrayList<Post> unanswered;
-    String status;
-    boolean selfEnroll;
-    private Forest keywordForest;
+    String courseID; // unique identifier for the course (Eg:DSC30)
+    Instructor instructor; // instructor of this course
+    ArrayList<User> users; // stores users enrolled in this course
+    ArrayList<Post> posts; // stores all posts created in this course
+    ArrayList<Post> unanswered; // stores unanswered posts(optional)
+    String status; // status of the course (active/inactive)
+    boolean selfEnroll; // whether the self-enrollment option is enabled
+    private Forest keywordForest; // stores keywords and their corresponding posts in the structure of forest (mentioned in later sections)
 
     private static final String STATS_STRING = "%s submitted %d posts, answered %d posts, received %d endorsements\n";
 
@@ -25,7 +27,14 @@ public class PiazzaExchange {
      * @param selfEnroll whether the class allow self enrolling or not.
      */
     public PiazzaExchange(Instructor instructor, String courseID, boolean selfEnroll) {
-        // TODO
+        this.instructor = instructor;
+        this.courseID = courseID;
+        this.selfEnroll = selfEnroll;
+        this.status = "inactive";
+        this.users = new ArrayList<>();
+        this.posts = new ArrayList<>();
+        this.unanswered = new ArrayList<>();
+        this.keywordForest = new Forest(); // TODO: verify
     }
 
     //is there a reason why we don't combine these two constructors?
@@ -38,7 +47,14 @@ public class PiazzaExchange {
      * @param roster the list of Users that will be included in this piazza
      */
     public PiazzaExchange(Instructor instructor, ArrayList<User> roster) {
-        // TODO
+        this.instructor = instructor;
+        this.courseID = "DSC30";
+        this.selfEnroll = false;
+        this.status = "inactive"; // TODO: verify
+        this.users = roster;
+        this.posts = new ArrayList<>();
+        this.unanswered = new ArrayList<>();
+        this.keywordForest = new Forest(); // TODO: verify
     }
 
     public Forest getKeywordForest() {
@@ -52,8 +68,26 @@ public class PiazzaExchange {
      * @return two posts that has the highest endorsed
      */
     public Post[] computeTopTwoEndorsedPosts() {
-        // TODO
-        return null;
+        Post[] arr = new Post[2];
+        if (this.posts.size() == 1){
+            arr[0] = posts.get(0);
+            arr[1] = null;
+        }
+        else {
+            int firstCount = 0;
+            int secondCount = 0;
+            for (Post post : posts) {
+                int curCount = post.endorsementCount;
+                if (curCount > firstCount) {
+                    arr[0] = post;
+                    firstCount = curCount;
+                } else if (curCount > secondCount) {
+                    arr[1] = post;
+                    secondCount = curCount;
+                }
+            }
+        }
+        return arr; // TODO: verify
     }
 
     
@@ -90,7 +124,10 @@ public class PiazzaExchange {
      * @return successfulness of the action call
      */
     public boolean activatePiazza(User u){
-        // TODO
+        if (u instanceof Instructor && this.status.equals("inactive")) { //TODO: equals or == ?
+            this.status = "active";
+            return true;
+        }
         return false;
     }
 
@@ -101,7 +138,11 @@ public class PiazzaExchange {
      * @return successfulness of the action call
      */
     public boolean deactivatePiazza(User u){
-        // TODO
+        if (u instanceof Instructor && this.status.equals("active")) {
+            this.status = "inactive";
+            this.selfEnroll = false;
+            return true;
+        }
         return false;
     }
 
@@ -114,7 +155,21 @@ public class PiazzaExchange {
      * @return successfulness of the action call
      */
     public boolean enrollUserToDatabase(User requester, User u){
-        // TODO
+        if (this.status.equals("active") && !this.users.contains(u)){
+            if (this.selfEnroll){
+                this.users.add(u);
+                u.courses.add(this);
+                return true;
+            }
+            else if (requester instanceof Instructor || requester instanceof Tutor){
+                this.users.add(u);
+                u.courses.add(this);
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
         return false;
     }
 
@@ -125,8 +180,7 @@ public class PiazzaExchange {
      * @return successfulness of the action call
      */
     public boolean enrollUserToDatabase(User u){
-        // TODO
-        return false;
+        return this.enrollUserToDatabase(u, u);
     }
 
     ////////////// BEGIN BENCHMARKED METHOD /////////////
@@ -139,7 +193,15 @@ public class PiazzaExchange {
      * @throws OperationDeniedException when the action is not allowed
      */
     public void addPostToDatabase(User u, Post p) throws OperationDeniedException {
-        // TODO
+        if (!this.users.contains(u) || this.status.equals("inactive")){
+            throw new OperationDeniedException();
+        }
+        this.posts.add(p);
+        u.posts.add(p);
+        u.numOfPostSubmitted++;
+        if (p instanceof Question) {
+            this.unanswered.add(p);
+        }
     }
 
     /**
@@ -150,8 +212,17 @@ public class PiazzaExchange {
      * @return the post array that contains every single post that has the keyword
      */
     public Post[] retrievePost(User u, String keyword){
-        // TODO
-        return null;
+        ArrayList<Post> userPostsArr = new ArrayList<>();;
+        for (Post post: this.posts){
+            if (post.getKeyword().equals(keyword) && post.poster == u){ //TODO: equals or == ?
+                userPostsArr.add(post);
+            }
+        }
+        Post[] thisUserPosts = new Post[userPostsArr.size()];
+        for (int i = 0; i < thisUserPosts.length; i++){
+            thisUserPosts[i] = userPostsArr.get(i);
+        }
+        return thisUserPosts;
     }
 
     /**
@@ -161,8 +232,17 @@ public class PiazzaExchange {
      * @return the post array that contains every single post that has the keyword
      */
     public Post[] retrievePost(String keyword){
-        // TODO
-        return null;
+        ArrayList<Post> userPostsArr = new ArrayList<>();;
+        for (Post post : this.posts){
+            if (post.getKeyword().equals(keyword)){
+                userPostsArr.add(post);
+            }
+        }
+        Post[] thisUserPosts = new Post[userPostsArr.size()];
+        for (int i = 0; i < thisUserPosts.length; i++){
+            thisUserPosts[i] = userPostsArr.get(i);
+        }
+        return thisUserPosts;
     }
 
     /**
@@ -172,11 +252,16 @@ public class PiazzaExchange {
      * @return the post array that contains every single post that has specified poster u
      */
     public Post[] retrievePost(User u) {
-        return null;
+        ArrayList<Post> userPostsArr = u.posts;
+        Post[] thisUserPosts = new Post[userPostsArr.size()];
+        for (int i = 0; i < thisUserPosts.length; i++){
+            thisUserPosts[i] = userPostsArr.get(i);
+        }
+        return thisUserPosts;
     }
 
     /**
-     * delete the post from the PE. User should be either the creator of the post or a course staff
+     * delete the post from the PE. User should be Instructor
      * return whether the post got successfully deleted or not
      *
      * @param u the user who initiate this action
@@ -185,7 +270,16 @@ public class PiazzaExchange {
      * @throws OperationDeniedException when the action is denied
      */
     public boolean deletePostFromDatabase(User u, Post p) throws OperationDeniedException {
-        // TODO
+        if (!(u instanceof Instructor)){
+            throw new OperationDeniedException();
+        }
+        if (this.posts.contains(p)){ //
+            this.posts.remove(p); // TODO: need to worry abt updating post? perhaps not @1058
+            if (this.unanswered.contains(p)){
+                this.unanswered.remove(p);
+            }
+            return true;
+        }
         return false;
     }
 
@@ -196,8 +290,17 @@ public class PiazzaExchange {
      * @return the Post with the highest urgency rating
      */
     public Post computeMostUrgentQuestion() {
-        // TODO
-        return null;
+        int mostUrgent = 0;
+        Post mostUrgentPost = null;
+
+        for (Post post : this.unanswered){
+            int curUrgency = post.calculatePriority();
+            if (curUrgency >= mostUrgent){
+                mostUrgent = curUrgency;
+                mostUrgentPost = post;
+            }
+        }
+        return mostUrgentPost;
     }
 
     /**
@@ -208,7 +311,18 @@ public class PiazzaExchange {
      * @throws OperationDeniedException when the operation is denied
      */
     public Post[] computeTopKUrgentQuestion(int k) throws OperationDeniedException{
-        // TODO
+        if (k > this.unanswered.size()){
+            throw new OperationDeniedException();
+        }
+//        ArrayList<Post> array = new ArrayList<>(posts);
+        ArrayList<Post> topKList = new ArrayList<>();
+        Post[] arr = new Post[k];
+        for (Post post : unanswered){
+            int curUrgency = post.calculatePriority();
+
+        }
+
+
         return null;
     }
 
@@ -318,7 +432,7 @@ public class PiazzaExchange {
      * @param k the number of similar post that we are querying
      */
     public Post[] computeKSimilarPosts(String keyword, int k) {
-        // TODO
+        // TODO; not needed for checkpoint
         return null;
     }
 
@@ -327,7 +441,7 @@ public class PiazzaExchange {
      * Forest of tree of BST and store key using HashMap.
      */
     public Post[] computeKSimilarPosts(String keyword, int k, int level) {
-        // TODO
+        // TODO; not needed for checkpoint
         return null;
     }
 
