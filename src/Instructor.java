@@ -13,8 +13,17 @@ public class Instructor extends User{
         ((Question) p).answerQuestion(response);
         if (!this.posts.contains(p)) {
             this.posts.add(p);
-        } //TODO: need to add some more when doing PE
-        this.numOfPostsAnswered++; //TODO: if question is alr answered, do we still answer it?
+        }
+        this.numOfPostsAnswered++;
+        String userCourseID = p.parentPEID;
+        PiazzaExchange postPE;
+        for (PiazzaExchange pe : courses){
+            if (pe.courseID.equals(userCourseID)){
+                postPE = pe;
+                postPE.unanswered.remove(p);
+                break;
+            }
+        }
         return true;
     }
 
@@ -36,25 +45,25 @@ public class Instructor extends User{
 
     public Post deletePost(Post p, PiazzaExchange piazza) {
         try {
-            boolean delete = piazza.deletePostFromDatabase(this,p);
-            if (!delete){
+            boolean deletionSuccessful = piazza.deletePostFromDatabase(this,p);
+            if (!deletionSuccessful){
                 return null;
             }
         }
-        catch (OperationDeniedException e){
+        catch (OperationDeniedException err){
             return null;
         }
         return p;
     }
 
     public boolean inactivatePiazza(PiazzaExchange piazza) {
-        return piazza.deactivatePiazza(this); // TODO: verify the return statement of PE method
+        return piazza.deactivatePiazza(this);
     }
 
     public boolean editPost(Post p, String newText){
         p.editText(newText);
         if (!this.posts.contains(p)){
-            this.numOfPostSubmitted++; // TODO: should we add p to posts?
+            this.numOfPostSubmitted++;
         }
         return true;
     }

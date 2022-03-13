@@ -1,10 +1,10 @@
+import javafx.geometry.Pos;
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 public class PiazzaExchange {
 
@@ -34,7 +34,7 @@ public class PiazzaExchange {
         this.users = new ArrayList<>();
         this.posts = new ArrayList<>();
         this.unanswered = new ArrayList<>();
-        this.keywordForest = new Forest(); // TODO: verify
+        this.keywordForest = new Forest();
     }
 
     //is there a reason why we don't combine these two constructors?
@@ -50,16 +50,15 @@ public class PiazzaExchange {
         this.instructor = instructor;
         this.courseID = "DSC30";
         this.selfEnroll = false;
-        this.status = "inactive"; // TODO: verify
+        this.status = "inactive";
         this.users = roster;
         this.posts = new ArrayList<>();
         this.unanswered = new ArrayList<>();
-        this.keywordForest = new Forest(); // TODO: verify
+        this.keywordForest = new Forest();
     }
 
     public Forest getKeywordForest() {
-        // TODO
-        return null;
+        return this.keywordForest;
     }
 
     /**
@@ -68,26 +67,35 @@ public class PiazzaExchange {
      * @return two posts that has the highest endorsed
      */
     public Post[] computeTopTwoEndorsedPosts() {
-        Post[] arr = new Post[2];
-        if (this.posts.size() == 1){
-            arr[0] = posts.get(0);
-            arr[1] = null;
+        Post[] top2Endorsed = new Post[2];
+        if (this.posts.size() == 0){
+            top2Endorsed[0] = null;
+            top2Endorsed[1] = null;
         }
-        else {
-            int firstCount = 0;
-            int secondCount = 0;
-            for (Post post : posts) {
-                int curCount = post.endorsementCount;
-                if (curCount > firstCount) {
-                    arr[0] = post;
-                    firstCount = curCount;
-                } else if (curCount > secondCount) {
-                    arr[1] = post;
-                    secondCount = curCount;
-                }
+        else if (this.posts.size() == 1){
+            top2Endorsed[0] = posts.get(0);
+            top2Endorsed[1] = null;
+        }
+        Post num1Post = null;
+        int num1 = 0;
+        Post num2Post = null;
+        int num2 = 0;
+        for (Post post : posts){
+            int curCount = post.endorsementCount;
+            if (curCount >= num1){
+                num2 = num1;
+                num2Post = num1Post;
+                num1Post = post;
+                num1 = curCount;
+            }
+            else if (curCount >= num2){
+                num2Post = post;
+                num2 = curCount;
             }
         }
-        return arr; // TODO: verify
+        top2Endorsed[0] = num1Post;
+        top2Endorsed[1] = num2Post;
+        return top2Endorsed;
     }
 
     
@@ -103,8 +111,20 @@ public class PiazzaExchange {
      * @return integer array with the daily post status
      */
     public int[] computeDailyPostStats() {
-        // TODO
-        return null;
+        int[] last30DaysArr = new int[30];
+        int numOfPostsPerDay;
+        LocalDate curDate = LocalDate.now();
+        for (int i = 0; i < 30; i++) {
+            numOfPostsPerDay = 0;
+            for (int j = 0; j < this.posts.size(); j++) {
+                LocalDate thisPostDate = this.posts.get(j).getDate();
+                if (ChronoUnit.DAYS.between(thisPostDate, curDate) == i){
+                    numOfPostsPerDay++;
+                }
+            }
+            last30DaysArr[i] = numOfPostsPerDay;
+        }
+        return last30DaysArr;
     }
 
     /**
@@ -113,8 +133,20 @@ public class PiazzaExchange {
      * @return integer array that indicates the monthly status.
      */
     public int[] computeMonthlyPostStats(){
-        // TODO
-        return null;
+        int[] monthlyPostsArr = new int[12];
+        int numOfPostsPerMonths;
+        LocalDate curDate = LocalDate.now();
+        for (int i = 0; i < 12; i++){
+            numOfPostsPerMonths = 0;
+            for (int j = 0; j < this.posts.size(); j++){
+                LocalDate thisPostDate = this.posts.get(j).getDate();
+                if (ChronoUnit.MONTHS.between(thisPostDate, curDate) == i){
+                    numOfPostsPerMonths++;
+                }
+            }
+            monthlyPostsArr[i] = numOfPostsPerMonths;
+        }
+        return monthlyPostsArr;
     }
 
     /**
@@ -124,7 +156,7 @@ public class PiazzaExchange {
      * @return successfulness of the action call
      */
     public boolean activatePiazza(User u){
-        if (u instanceof Instructor && this.status.equals("inactive")) { //TODO: equals or == ?
+        if (u instanceof Instructor && this.status.equals("inactive")) { // TODO: equals or == ?
             this.status = "active";
             return true;
         }
@@ -213,8 +245,8 @@ public class PiazzaExchange {
      */
     public Post[] retrievePost(User u, String keyword){
         ArrayList<Post> userPostsArr = new ArrayList<>();;
-        for (Post post: this.posts){
-            if (post.getKeyword().equals(keyword) && post.poster == u){ //TODO: equals or == ?
+        for (Post post: u.posts){
+            if (post.getKeyword().equals(keyword)){ //TODO: equals or == ?
                 userPostsArr.add(post);
             }
         }
@@ -275,9 +307,7 @@ public class PiazzaExchange {
         }
         if (this.posts.contains(p)){ //
             this.posts.remove(p); // TODO: need to worry abt updating post? perhaps not @1058
-            if (this.unanswered.contains(p)){
-                this.unanswered.remove(p);
-            }
+            this.unanswered.remove(p);
             return true;
         }
         return false;
@@ -292,7 +322,9 @@ public class PiazzaExchange {
     public Post computeMostUrgentQuestion() {
         int mostUrgent = 0;
         Post mostUrgentPost = null;
-
+        if (this.unanswered.size() == 0){
+            return null;
+        }
         for (Post post : this.unanswered){
             int curUrgency = post.calculatePriority();
             if (curUrgency >= mostUrgent){
@@ -314,16 +346,23 @@ public class PiazzaExchange {
         if (k > this.unanswered.size()){
             throw new OperationDeniedException();
         }
-//        ArrayList<Post> array = new ArrayList<>(posts);
-        ArrayList<Post> topKList = new ArrayList<>();
-        Post[] arr = new Post[k];
-        for (Post post : unanswered){
-            int curUrgency = post.calculatePriority();
-
+        ArrayList<Post> unansweredQuestionsCopy = new ArrayList<>(unanswered);
+        ArrayList<Post> topKUrgentQuestions = new ArrayList<>();
+        for (int i = 0; i < k; i++){
+            int PostWMostUrgencyI = 0;
+            for (int j = 1; j < unansweredQuestionsCopy.size(); j++){
+                int curUrgency = posts.get(j).calculatePriority();
+                if (curUrgency > unansweredQuestionsCopy.get(PostWMostUrgencyI).calculatePriority()){
+                    PostWMostUrgencyI = j;
+                }
+            }
+            topKUrgentQuestions.add(unansweredQuestionsCopy.remove(PostWMostUrgencyI));
         }
-
-
-        return null;
+        Post[] topKUrgencyQues = new Post[k];
+        for (int i = 0; i < k; i++){
+            topKUrgencyQues[i] = topKUrgentQuestions.get(i);
+        }
+        return topKUrgencyQues;
     }
 
     /**
@@ -336,7 +375,16 @@ public class PiazzaExchange {
      * @throws OperationDeniedException when the operation is denied
      */
     public Post answerQuestion(User u, Post p, String response) throws OperationDeniedException{
-        // TODO
+        if (!posts.contains(p)){
+            throw new OperationDeniedException();
+        }
+        if (p instanceof Question){
+            boolean questionAnswered = u.answerQuestion(p, response);
+            if (questionAnswered) {
+                unanswered.remove(p);
+            }
+            return p;
+        }
         return null;
     }
 
@@ -348,8 +396,18 @@ public class PiazzaExchange {
      * @return
      */
     public String viewStats(User u){
-        //TODO
-        return null;
+        String stats = "";
+        if (u instanceof Student){
+            stats += String.format(STATS_STRING, u.username, u.numOfPostSubmitted, u.numOfPostsAnswered, u.numOfEndorsement);
+        }
+        else if (u instanceof Instructor || u instanceof Tutor){
+            for (User user : this.users){
+                if (user instanceof Student){
+                    stats += String.format(STATS_STRING, user.username, user.numOfPostSubmitted, user.numOfPostsAnswered, user.numOfEndorsement);
+                }
+            }
+        }
+        return stats.trim();
     }
 
     /**
@@ -360,8 +418,11 @@ public class PiazzaExchange {
      *      in this piazza
      */
     public Post[] retrieveLog(User u){
-        // TODO
-        return null;
+        Post[] postsArr = new Post[this.posts.size()];
+        for (int i = 0; i < postsArr.length; i++){
+            postsArr[i] = this.posts.get(i);
+        }
+        return postsArr;
     }
 
     //If the length > 10, students only be able to access the first 10 posts right?
@@ -374,8 +435,19 @@ public class PiazzaExchange {
      * @return the posts array that satisfy the conditions
      */
     public Post[] retrieveLog(User u, int length){
-        // TODO
-        return null;
+        if (u instanceof Student){
+            if (length > 10){
+                length = 10;
+            }
+        }
+        if (length > this.posts.size()){
+            length = this.posts.size();
+        }
+        Post[] postsArr = new Post[length];
+        for (int i = 0; i < postsArr.length; i++){
+            postsArr[i] = posts.get(i);
+        }
+        return postsArr;
     }
 
     private String[] getEleMultipleIndex(String[] arr, int[] indexes) {

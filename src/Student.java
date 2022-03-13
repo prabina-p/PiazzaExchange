@@ -15,8 +15,17 @@ public class Student extends User{
         ((Question) p).answerQuestion(response);
         if (!this.posts.contains(p)) {
             this.posts.add(p);
-        } //TODO: need to add some more when doing PE
+        }
         this.numOfPostsAnswered++;
+        String userCourseID = p.parentPEID;
+        PiazzaExchange postPE;
+        for (PiazzaExchange pe : courses){
+            if (pe.courseID.equals(userCourseID)){
+                postPE = pe;
+                postPE.unanswered.remove(p);
+                break;
+            }
+        }
         return true;
     }
 
@@ -40,7 +49,7 @@ public class Student extends User{
         if (!p.isPrivate || p.poster == this){
             p.editText(newText);
             if (!this.posts.contains(p)){
-                this.numOfPostSubmitted++; // TODO: should we add p to posts?
+                this.numOfPostSubmitted++;
             }
             return true;
         }

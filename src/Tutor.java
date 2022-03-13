@@ -15,6 +15,15 @@ public class Tutor extends User{
             this.posts.add(p);
         } //TODO: need to add some more when doing PE
         this.numOfPostsAnswered++; //TODO: if question is alr answered, do we still answer it?
+        String userCourseID = p.parentPEID;
+        PiazzaExchange postPE;
+        for (PiazzaExchange pe : courses){
+            if (pe.courseID.equals(userCourseID)){
+                postPE = pe;
+                postPE.unanswered.remove(p);
+                break;
+            }
+        }
         return true;
     }
 
@@ -38,7 +47,7 @@ public class Tutor extends User{
     public boolean editPost(Post p, String newText) {
         p.editText(newText);
         if (!this.posts.contains(p)){
-            this.numOfPostSubmitted++; // TODO: should we add p to posts?
+            this.numOfPostSubmitted++;
         }
         return true;
     }
@@ -52,10 +61,10 @@ public class Tutor extends User{
      * @throws OperationDeniedException when the operation is denied
      */
     public Post[] getTopKUrgentQuestion(PiazzaExchange pe, int k) throws OperationDeniedException {
-        Post[] arr = new Post[1]; // TODO: in the writeup, method signature is flipped
+        Post[] PostArr = new Post[1];
         if (k == 1){
-            arr[0] = pe.computeMostUrgentQuestion();
-            return arr;
+            PostArr[0] = pe.computeMostUrgentQuestion();
+            return PostArr;
         }
         else {
             return pe.computeTopKUrgentQuestion(k);

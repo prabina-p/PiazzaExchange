@@ -33,7 +33,7 @@ public abstract class User {
      * @return whether the action is successful
      */
     public boolean enrollClass(PiazzaExchange piazza) {
-        return piazza.enrollUserToDatabase(this);
+        return piazza.enrollUserToDatabase(this, this);
     }
 
     /**
