@@ -52,6 +52,9 @@ public class PiazzaExchange {
         this.selfEnroll = false;
         this.status = "inactive";
         this.users = roster;
+        for (User user : roster){
+            user.courses.add(this);
+        }
         this.posts = new ArrayList<>();
         this.unanswered = new ArrayList<>();
         this.keywordForest = new Forest();

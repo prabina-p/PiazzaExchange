@@ -9,9 +9,9 @@ public class Forest {
 
     protected class InternalNode {
 
-        String key;
-        ArrayList<Post> posts;
-        ArrayList<InternalNode> children;
+        String key; // The key of the internal node
+        ArrayList<Post> posts; // The posts with this specific keyword
+        ArrayList<InternalNode> children; // The children of this key
 
         /**
          * A constructor that initializes the InternalNode instance variables.
@@ -19,7 +19,10 @@ public class Forest {
          * @param key      Node's key
          */
         public InternalNode(String key, Post post) {
-            // TODO
+            this.key = key;
+            this.posts = new ArrayList<>();
+            this.posts.add(post);
+            this.children = new ArrayList<>();
         }
 
         /**
@@ -30,7 +33,9 @@ public class Forest {
          * @param key Node's key
          */
         public InternalNode(String key) {
-            // TODO
+            this.key = key;
+            this.posts = new ArrayList<>();
+            this.children = new ArrayList<>();
         }
 
         /**
@@ -39,8 +44,7 @@ public class Forest {
          * @return The key
          */
         public String getKey() {
-            // TODO
-            return null;
+            return this.key;
         }
 
 
@@ -50,26 +54,23 @@ public class Forest {
          * @return The linked list of the node
          */
         public ArrayList<Post> getPosts() {
-            // TODO
-            return null;
+            return this.posts;
         }
 
         public ArrayList<InternalNode> getChildren() {
-            // TODO
-            return null;
+            return this.children;
         }
 
         public void addChildren(InternalNode node) {
-            // TODO
+            this.children.add(node);
         }
 
         public void setChildren(ArrayList<InternalNode> children) {
-            // TODO
+            this.children = children;
         }
 
         public boolean removeChildren(InternalNode node) {
-            // TODO
-            return false;
+            return this.children.remove(node);
         }
 
         /**
@@ -78,7 +79,7 @@ public class Forest {
          * @param newPosts New linked list
          */
         public void setPostsList(ArrayList<Post> newPosts) {
-            // TODO
+            this.posts = newPosts;
         }
 
         /**
@@ -87,7 +88,7 @@ public class Forest {
          * @param data New data to be appended
          */
         public void addNewPost(Post data) {
-            // TODO
+            this.posts.add(data);
         }
 
         /**
@@ -98,8 +99,7 @@ public class Forest {
          * @return True if data was found, false otherwise
          */
         public boolean removePost(Post data) {
-            // TODO
-            return false;
+            return this.posts.remove(data);
         }
     }
 
@@ -107,9 +107,9 @@ public class Forest {
      * Constructor that initialize the instance variable of the forest
      */
     public Forest() {
-        // TODO
+        this.forest = new HashMap<>();
+        this.treeCount = 0;
     }
-
 
     /**
      * Insert the specific key into the forest with InternalNode with empty posts
@@ -117,7 +117,9 @@ public class Forest {
      * @param key the key of the internal node
      */
     public void insert(String key) {
-       // TODO
+        key = key.toLowerCase();
+        InternalNode node = new InternalNode(key);
+        this.forest.put(key, node);
     }
 
     /**
@@ -126,7 +128,14 @@ public class Forest {
      * @param post insert the post according to the post's key
      */
     public void insert(Post post) {
-        // TODO
+        String keyWd = post.getKeyword();
+        boolean exists = this.forest.containsKey(keyWd);
+        if (exists){
+
+        }
+        else {
+            this.insert(keyWd);
+        }
     }
 
     /**
