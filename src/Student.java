@@ -31,17 +31,12 @@ public class Student extends User{
 
     @Override
     public boolean endorsePost(Post p) {
-        boolean eligibleUser = false;
-        if (p.isPrivate){
-            eligibleUser = (p.poster == this);
-        }
-        if (!eligibleUser){
-            return false;
-        }
-        else {
+        boolean eligibleUser = (!p.isPrivate || p.poster == this);
+        if (eligibleUser){
             p.endorsementCount++;
             return true;
         }
+        return false;
     }
 
     @Override
