@@ -12,6 +12,7 @@ public class Question extends Post {
      */
     public Question(User poster, String header, String UID) {
         super(poster, header, UID);
+        this.answers = new ArrayList<>();
     }
 
     /**
@@ -25,6 +26,7 @@ public class Question extends Post {
      */
     public Question(User poster, String header, String question, String keyword, String PEID, String UID){
         super(poster, header, question, keyword, PEID, UID);
+        this.answers = new ArrayList<>();
 
     }
 
