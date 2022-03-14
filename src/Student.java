@@ -5,28 +5,25 @@ public class Student extends User{
     }
 
     public boolean answerQuestion(Post p, String response) {
-        boolean eligibleUser = false;
-        if (p.isPrivate){
-            eligibleUser = (p.poster == this);
-        }
-        if (response.length() > 50 || !eligibleUser || !(p instanceof Question)){
-            return false;
-        }
-        ((Question) p).answerQuestion(response);
-        if (!this.posts.contains(p)) {
-            this.posts.add(p);
-        }
-        this.numOfPostsAnswered++;
-        String userCourseID = p.parentPEID;
-        PiazzaExchange postPE;
-        for (PiazzaExchange pe : courses){
-            if (pe.courseID.equals(userCourseID)){
-                postPE = pe;
-                postPE.unanswered.remove(p);
-                break;
+        boolean eligibleUser = (!p.isPrivate || p.poster == this);
+        if (response.length() <= 50 && eligibleUser && p instanceof Question){
+            ((Question) p).answerQuestion(response);
+            if (!this.posts.contains(p)){
+                this.posts.add(p);
             }
+            this.numOfPostsAnswered++;
+            String userCourseID = p.parentPEID;
+            PiazzaExchange postPE;
+            for (PiazzaExchange pe : courses){
+                if (pe.courseID.equals(userCourseID)){
+                    postPE = pe;
+                    postPE.unanswered.remove(p);
+                    break;
+                }
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override
