@@ -8,21 +8,12 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 public class PiazzaExchangeTest {
-    Note thisFinal;
-    Note announcement;
-    Note checkingIn;
-    Question whenFinalDue;
-    Question curve;
-    Question anyQuestions;
-    Student prabina;
-    Student courtney;
-    Tutor scott;
-    Tutor brian;
-    Instructor sooh;
-    Instructor marina;
-    PiazzaExchange dsc30;
-    PiazzaExchange dsc20;
-
+    Note thisFinal, announcement, checkingIn;
+    Question whenFinalDue, curve, anyQuestions;
+    Student prabina, courtney;
+    Tutor scott, brian;
+    Instructor sooh, marina;
+    PiazzaExchange dsc30, dsc20;
 
     @Before
     public void setUp() throws Exception {

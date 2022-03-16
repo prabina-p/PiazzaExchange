@@ -507,8 +507,22 @@ public class PiazzaExchange {
      * @param k the number of similar post that we are querying
      */
     public Post[] computeKSimilarPosts(String keyword, int k) {
-        // TODO; not needed for checkpoint
-        return null;
+        String keyWdLowerCase = keyword.toLowerCase();
+        this.initializeForest();
+        String[] childrenKeyWd = keywordForest.queryConnection(keyWdLowerCase);
+        Post[] kSimilarPosts= new Post[k];
+        int kCount = 0;
+        for (int i = 0; i < childrenKeyWd.length; i++){
+            Forest.InternalNode childNode = keywordForest.nodeLookUp(childrenKeyWd[i]);
+            for (Post post : childNode.getPosts()){
+                if (kCount == k) {
+                    break;
+                }
+                kSimilarPosts[kCount] = post;
+                kCount++;
+            }
+        }
+        return kSimilarPosts;
     }
 
     /**
@@ -525,8 +539,6 @@ public class PiazzaExchange {
      * NOT GRADED, for your own debugging purposes
      */
     public String toString(){
-        // TODO
-        return null;
+        return this.courseID;
     }
-
 }

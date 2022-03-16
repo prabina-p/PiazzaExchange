@@ -5,7 +5,6 @@ public class Forest {
 
     // Connects the InternalNode with their specific keywords in the hashmap
     private HashMap<String, InternalNode> forest;
-    int treeCount;
 
     protected class InternalNode {
 
@@ -19,7 +18,7 @@ public class Forest {
          * @param key      Node's key
          */
         public InternalNode(String key, Post post) {
-            this.key = key;
+            this.key = key.toLowerCase();
             this.posts = new ArrayList<>();
             this.posts.add(post);
             this.children = new ArrayList<>();
@@ -33,7 +32,7 @@ public class Forest {
          * @param key Node's key
          */
         public InternalNode(String key) {
-            this.key = key;
+            this.key = key.toLowerCase();
             this.posts = new ArrayList<>();
             this.children = new ArrayList<>();
         }
@@ -108,7 +107,6 @@ public class Forest {
      */
     public Forest() {
         this.forest = new HashMap<>();
-        this.treeCount = 0;
     }
 
     /**
@@ -117,9 +115,9 @@ public class Forest {
      * @param key the key of the internal node
      */
     public void insert(String key) {
-        key = key.toLowerCase();
-        InternalNode node = new InternalNode(key);
-        this.forest.put(key, node);
+        String lowerKey = key.toLowerCase();
+        InternalNode node = new InternalNode(lowerKey);
+        this.forest.put(lowerKey, node);
     }
 
     /**
@@ -128,13 +126,14 @@ public class Forest {
      * @param post insert the post according to the post's key
      */
     public void insert(Post post) {
-        String keyWd = post.getKeyword();
-        boolean exists = this.forest.containsKey(keyWd);
-        if (exists){
-
+        String postKeyWd = post.getKeyword().toLowerCase(); // TODO: most likely don't need to turn it lowercase
+        InternalNode nodeWKey = this.nodeLookUp(postKeyWd);
+        if (nodeWKey == null){
+            nodeWKey = new InternalNode(postKeyWd, post);
+            this.forest.put(postKeyWd, nodeWKey);
         }
         else {
-            this.insert(keyWd);
+            nodeWKey.addNewPost(post);
         }
     }
 
@@ -145,8 +144,11 @@ public class Forest {
      * @param key querying the internal node with this specific key
      */
     public InternalNode nodeLookUp(String key) {
-        // TODO
-        return null;
+        boolean exists  = this.forest.containsKey(key.toLowerCase());
+        if (!exists){
+            return null;
+        }
+        return this.forest.get(key.toLowerCase());
     }
 
     /**
@@ -157,8 +159,10 @@ public class Forest {
      * @return the Arraylist of posts
      */
     public ArrayList<Post> getPosts(String key) {
-        // TODO
-        return null;
+        if (this.nodeLookUp(key.toLowerCase()) == null){
+            throw new IllegalArgumentException();
+        }
+        return this.nodeLookUp(key.toLowerCase()).getPosts();
     }
 
     /**
@@ -168,7 +172,22 @@ public class Forest {
      * @param children the array of children node's keys
      */
     public void addConnection(String parent, String[] children) {
-        // TODO
+        String parentKeyLowerCase = parent.toLowerCase();
+        InternalNode parentNode = this.nodeLookUp(parentKeyLowerCase);
+        if (parentNode == null){
+            parentNode = new InternalNode(parentKeyLowerCase);
+            this.forest.put(parentKeyLowerCase, parentNode);
+        }
+        for (String keyWd : children){
+            String childKeyLowerCase = keyWd.toLowerCase();
+            InternalNode childNode = this.nodeLookUp(childKeyLowerCase);
+            if (childNode == null){
+                childNode = new InternalNode(childKeyLowerCase);
+                this.forest.put(childKeyLowerCase, childNode);
+            }
+            parentNode.addChildren(childNode);
+
+        }
     }
 
     /**
@@ -178,7 +197,19 @@ public class Forest {
      * @param child the key of the child key
      */
     public void addConnection(String parent, String child) {
-        // TODO
+        String parentKeyLowerCase = parent.toLowerCase();
+        InternalNode parentNode = this.nodeLookUp(parentKeyLowerCase);
+        if (parentNode == null){
+            parentNode = new InternalNode(parentKeyLowerCase);
+            this.forest.put(parentKeyLowerCase, parentNode);
+        }
+        String childKeyLowerCase = child.toLowerCase();
+        InternalNode childNode = this.nodeLookUp(childKeyLowerCase);
+        if (childNode == null){
+            childNode = new InternalNode(childKeyLowerCase);
+            this.forest.put(childKeyLowerCase, childNode);
+        }
+        parentNode.addChildren(childNode);
     }
 
     /**
@@ -189,7 +220,33 @@ public class Forest {
      * @return the children of that specific node
      */
     public String[] queryConnection(String key) {
-        // TODO
-        return null;
+        String keyLowerCase = key.toLowerCase();
+        InternalNode queryNode = this.nodeLookUp(keyLowerCase);
+        if (queryNode == null){
+            return null;
+        }
+        ArrayList<Forest.InternalNode> childrenNode = queryNode.getChildren();
+        String[] keys = new String[childrenNode.size()];
+        for (int i = 0; i < childrenNode.size(); i++){
+            keys[i] = childrenNode.get(i).getKey();
+        }
+        return keys;
+    }
+
+    /**
+     * Delete the specific value (post) from the forest
+     *
+     * @param post delete the post according to the post's key
+     * @return whether the deletion was successful
+     */
+    public boolean delete(Post post) {
+        String postKeyWd = post.getKeyword().toLowerCase();
+        InternalNode postNode = nodeLookUp(postKeyWd);
+        if (postNode == null){
+            return false;
+        }
+        return this.forest.get(postKeyWd).removePost(post);
+//        return postNode.removePost(post);
+
     }
 }
