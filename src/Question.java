@@ -70,7 +70,7 @@ public class Question extends Post {
     @Override
     public String toString() {
         String necessaryInfo;
-        necessaryInfo = this.text;
+        necessaryInfo = this.getKeyword();
         return necessaryInfo; // TODO: change it later
     }
 

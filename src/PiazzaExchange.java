@@ -35,6 +35,7 @@ public class PiazzaExchange {
         this.posts = new ArrayList<>();
         this.unanswered = new ArrayList<>();
         this.keywordForest = new Forest();
+        this.initializeForest();
     }
 
     //is there a reason why we don't combine these two constructors?
@@ -58,6 +59,7 @@ public class PiazzaExchange {
         this.posts = new ArrayList<>();
         this.unanswered = new ArrayList<>();
         this.keywordForest = new Forest();
+        this.initializeForest();
     }
 
     public Forest getKeywordForest() {
@@ -234,6 +236,7 @@ public class PiazzaExchange {
         this.posts.add(p);
         u.posts.add(p);
         u.numOfPostSubmitted++;
+        this.keywordForest.insert(p);
         if (p instanceof Question) {
             this.unanswered.add(p);
         }
@@ -507,20 +510,32 @@ public class PiazzaExchange {
      * @param k the number of similar post that we are querying
      */
     public Post[] computeKSimilarPosts(String keyword, int k) {
-        String keyWdLowerCase = keyword.toLowerCase();
-        this.initializeForest();
-        String[] childrenKeyWd = keywordForest.queryConnection(keyWdLowerCase);
-        Post[] kSimilarPosts= new Post[k];
-        int kCount = 0;
-        for (int i = 0; i < childrenKeyWd.length; i++){
-            Forest.InternalNode childNode = keywordForest.nodeLookUp(childrenKeyWd[i]);
-            for (Post post : childNode.getPosts()){
-                if (kCount == k) {
-                    break;
-                }
-                kSimilarPosts[kCount] = post;
-                kCount++;
+        keyword = keyword.toLowerCase();
+        ArrayList<Post> similarPostsArr = new ArrayList<>();
+        Queue<Forest.InternalNode> thisQueue = new LinkedList<>();
+        Queue<Forest.InternalNode> childQueue = new LinkedList<>();
+        Forest.InternalNode parentNode = this.keywordForest.nodeLookUp(keyword);
+        if (parentNode == null) {
+            return null;
+        }
+        thisQueue.add(parentNode);
+        while (!thisQueue.isEmpty() && similarPostsArr.size() < k){
+            for (Forest.InternalNode node : thisQueue){
+                childQueue.addAll(node.getChildren());
             }
+            for (Forest.InternalNode node : thisQueue){
+                for (Post post : node.getPosts()){
+                    if (similarPostsArr.size() >= k) break;
+                    similarPostsArr.add(post);
+                }
+            }
+            thisQueue.clear();
+            thisQueue.addAll(childQueue);
+            childQueue.clear();
+        }
+        Post[] kSimilarPosts = new Post[k];
+        for (int i = 0; i < similarPostsArr.size(); i++){
+            kSimilarPosts[i] = similarPostsArr.get(i);
         }
         return kSimilarPosts;
     }

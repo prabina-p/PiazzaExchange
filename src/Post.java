@@ -89,7 +89,7 @@ public abstract class Post implements Comparable<Post> {
 
     public String toString() {
         String necessaryInfo;
-        necessaryInfo = this.text;
+        necessaryInfo = this.UID;
         return necessaryInfo; // TODO: change it later
     }
 

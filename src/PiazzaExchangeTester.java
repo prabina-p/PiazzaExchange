@@ -26,7 +26,7 @@ public class PiazzaExchangeTester {
 
         pe = new PiazzaExchange(prof, "DSC30", true);
 
-        p1 = new Question(scott, placeHolder, placeHolder, "linkedlist", "DSC30", "P1");
+        p1 = new Question(scott, placeHolder, placeHolder, "linked list", "DSC30", "P1");
         p2 = new Question(scott, placeHolder, placeHolder, "SLL", "DSC30", "p2");
         p3 = new Question(scott, placeHolder, placeHolder, "DLL", "DSC30", "p3");
         p4 = new Question(scott, placeHolder, placeHolder, "midterm", "DSC30", "p4");
@@ -78,7 +78,9 @@ public class PiazzaExchangeTester {
                 scott.addPost(pe, p);
             }
         }
-        System.out.println(Arrays.toString(pe.computeKSimilarPosts("midterm", 20)));
+//        System.out.println(Arrays.toString(pe.computeKSimilarPosts("midterm", 20)));
+        System.out.println(Arrays.toString(pe.computeKSimilarPosts("linked list", 7)));
+// TODO: when a keyword isn't in the pe, throws exception; fix??
     }
 
 }

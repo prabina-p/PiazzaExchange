@@ -126,11 +126,12 @@ public class Forest {
      * @param post insert the post according to the post's key
      */
     public void insert(Post post) {
-        String postKeyWd = post.getKeyword().toLowerCase(); // TODO: most likely don't need to turn it lowercase
+        String postKeyWd = post.getKeyword().toLowerCase();
         InternalNode nodeWKey = this.nodeLookUp(postKeyWd);
         if (nodeWKey == null){
             nodeWKey = new InternalNode(postKeyWd, post);
             this.forest.put(postKeyWd, nodeWKey);
+//            nodeWKey.addNewPost(post); // TODO: VERIFY
         }
         else {
             nodeWKey.addNewPost(post);
@@ -144,11 +145,8 @@ public class Forest {
      * @param key querying the internal node with this specific key
      */
     public InternalNode nodeLookUp(String key) {
-        boolean exists  = this.forest.containsKey(key.toLowerCase());
-        if (!exists){
-            return null;
-        }
-        return this.forest.get(key.toLowerCase());
+        key = key.toLowerCase();
+        return this.forest.get(key);
     }
 
     /**
@@ -172,22 +170,23 @@ public class Forest {
      * @param children the array of children node's keys
      */
     public void addConnection(String parent, String[] children) {
-        String parentKeyLowerCase = parent.toLowerCase();
-        InternalNode parentNode = this.nodeLookUp(parentKeyLowerCase);
-        if (parentNode == null){
-            parentNode = new InternalNode(parentKeyLowerCase);
-            this.forest.put(parentKeyLowerCase, parentNode);
+        InternalNode parentNode = nodeLookUp(parent);
+        if (parentNode == null) {
+            this.insert(parent);
+            parentNode = nodeLookUp(parent);
         }
-        for (String keyWd : children){
-            String childKeyLowerCase = keyWd.toLowerCase();
-            InternalNode childNode = this.nodeLookUp(childKeyLowerCase);
-            if (childNode == null){
-                childNode = new InternalNode(childKeyLowerCase);
-                this.forest.put(childKeyLowerCase, childNode);
+        ArrayList<InternalNode> childrenList = new ArrayList<>();
+        for (String key: children) {
+            key = key.toLowerCase();
+            InternalNode node = nodeLookUp(key);
+            if (node != null) {
+                childrenList.add(node);
+            } else {
+                this.insert(key);
+                childrenList.add(nodeLookUp(key));
             }
-            parentNode.addChildren(childNode);
-
         }
+        parentNode.setChildren(childrenList);
     }
 
     /**
@@ -197,19 +196,20 @@ public class Forest {
      * @param child the key of the child key
      */
     public void addConnection(String parent, String child) {
-        String parentKeyLowerCase = parent.toLowerCase();
-        InternalNode parentNode = this.nodeLookUp(parentKeyLowerCase);
-        if (parentNode == null){
-            parentNode = new InternalNode(parentKeyLowerCase);
-            this.forest.put(parentKeyLowerCase, parentNode);
+        parent = parent.toLowerCase();
+        InternalNode parentNode = nodeLookUp(parent);
+        if (parentNode == null) {
+            this.insert(parent);
+            parentNode = nodeLookUp(parent);
         }
-        String childKeyLowerCase = child.toLowerCase();
-        InternalNode childNode = this.nodeLookUp(childKeyLowerCase);
-        if (childNode == null){
-            childNode = new InternalNode(childKeyLowerCase);
-            this.forest.put(childKeyLowerCase, childNode);
+        child = child.toLowerCase();
+        InternalNode node = nodeLookUp(child);
+        if (node != null) {
+            parentNode.addChildren(node);
+        } else {
+            this.insert(child);
+            parentNode.addChildren(nodeLookUp(child));
         }
-        parentNode.addChildren(childNode);
     }
 
     /**
