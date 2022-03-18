@@ -12,7 +12,8 @@ public class PiazzaExchange {
     Instructor instructor; // instructor of this course
     ArrayList<User> users; // stores users enrolled in this course
     ArrayList<Post> posts; // stores all posts created in this course
-    ArrayList<Post> unanswered; // stores unanswered posts(optional)
+//    ArrayList<Post> unanswered; // stores unanswered posts(optional)
+    PriorityQueue<Post> unansweredQueue; // stores
     String status; // status of the course (active/inactive)
     boolean selfEnroll; // whether the self-enrollment option is enabled
     private Forest keywordForest; // stores keywords and their corresponding posts in the structure of forest (mentioned in later sections)
@@ -33,7 +34,8 @@ public class PiazzaExchange {
         this.status = "inactive";
         this.users = new ArrayList<>();
         this.posts = new ArrayList<>();
-        this.unanswered = new ArrayList<>();
+//        this.unanswered = new ArrayList<>();
+        this.unansweredQueue = new PriorityQueue<>(new PriorityQueueComparator());
         this.keywordForest = new Forest();
         this.initializeForest();
     }
@@ -57,7 +59,8 @@ public class PiazzaExchange {
             user.courses.add(this);
         }
         this.posts = new ArrayList<>();
-        this.unanswered = new ArrayList<>();
+//        this.unanswered = new ArrayList<>();
+        this.unansweredQueue = new PriorityQueue<>(new PriorityQueueComparator());
         this.keywordForest = new Forest();
         this.initializeForest();
     }
@@ -238,7 +241,7 @@ public class PiazzaExchange {
         u.numOfPostSubmitted++;
         this.keywordForest.insert(p);
         if (p instanceof Question) {
-            this.unanswered.add(p);
+            this.unansweredQueue.add(p);
         }
     }
 
@@ -313,7 +316,7 @@ public class PiazzaExchange {
         }
         if (this.posts.contains(p)){ //
             this.posts.remove(p); // TODO: need to worry abt updating post? perhaps not @1058
-            this.unanswered.remove(p);
+            this.unansweredQueue.remove(p);
             return true;
         }
         return false;
@@ -326,19 +329,28 @@ public class PiazzaExchange {
      * @return the Post with the highest urgency rating
      */
     public Post computeMostUrgentQuestion() {
-        int mostUrgent = 0;
-        Post mostUrgentPost = null;
-        if (this.unanswered.size() == 0){
+        if (unansweredQueue.size() == 0){
             return null;
         }
-        for (Post post : this.unanswered){
-            int curUrgency = post.calculatePriority();
-            if (curUrgency >= mostUrgent){
-                mostUrgent = curUrgency;
-                mostUrgentPost = post;
-            }
+        PriorityQueue<Post> queueToComputeUrgentQ = new PriorityQueue<>(new PriorityQueueComparator());
+        while (!unansweredQueue.isEmpty()){
+            queueToComputeUrgentQ.add(unansweredQueue.remove());
         }
-        return mostUrgentPost;
+        this.unansweredQueue = queueToComputeUrgentQ;
+        return unansweredQueue.peek();
+//        int mostUrgent = 0;
+//        Post mostUrgentPost = null;
+//        if (this.unanswered.size() == 0){
+//            return null;
+//        }
+//        for (Post post : this.unanswered){
+//            int curUrgency = post.calculatePriority();
+//            if (curUrgency >= mostUrgent){
+//                mostUrgent = curUrgency;
+//                mostUrgentPost = post;
+//            }
+//        }
+//        return mostUrgentPost;
     }
 
     /**
@@ -349,26 +361,25 @@ public class PiazzaExchange {
      * @throws OperationDeniedException when the operation is denied
      */
     public Post[] computeTopKUrgentQuestion(int k) throws OperationDeniedException{
-        if (k > this.unanswered.size()){
+        if (k > this.unansweredQueue.size()){
             throw new OperationDeniedException();
         }
-        ArrayList<Post> unansweredQuestionsCopy = new ArrayList<>(unanswered);
-        ArrayList<Post> topKUrgentQuestions = new ArrayList<>();
-        for (int i = 0; i < k; i++){
-            int PostWMostUrgencyI = 0;
-            for (int j = 1; j < unansweredQuestionsCopy.size(); j++){
-                int curUrgency = posts.get(j).calculatePriority();
-                if (curUrgency > unansweredQuestionsCopy.get(PostWMostUrgencyI).calculatePriority()){
-                    PostWMostUrgencyI = j;
-                }
-            }
-            topKUrgentQuestions.add(unansweredQuestionsCopy.remove(PostWMostUrgencyI));
+        PriorityQueue<Post> queueToComputeKUrgentQ = new PriorityQueue<>(new PriorityQueueComparator());
+        PriorityQueue<Post> queueToRemoveQ = new PriorityQueue<>(new PriorityQueueComparator());
+        while (!this.unansweredQueue.isEmpty()){
+            queueToComputeKUrgentQ.add(this.unansweredQueue.remove());
         }
-        Post[] topKUrgencyQues = new Post[k];
+        this.unansweredQueue = queueToComputeKUrgentQ;
+        Post[] kUrgentPostArr = new Post[k];
         for (int i = 0; i < k; i++){
-            topKUrgencyQues[i] = topKUrgentQuestions.get(i);
+            Post urgentQ = this.unansweredQueue.remove();
+            kUrgentPostArr[i] = urgentQ;
+            queueToRemoveQ.add(urgentQ);
         }
-        return topKUrgencyQues;
+        while(!queueToRemoveQ.isEmpty()){
+            this.unansweredQueue.add(queueToRemoveQ.remove());
+        }
+        return kUrgentPostArr;
     }
 
     /**
@@ -387,7 +398,7 @@ public class PiazzaExchange {
         if (p instanceof Question){
             boolean questionAnswered = u.answerQuestion(p, response);
             if (questionAnswered) {
-                unanswered.remove(p);
+                unansweredQueue.remove(p);
             }
             return p;
         }

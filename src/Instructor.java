@@ -20,7 +20,7 @@ public class Instructor extends User{
         for (PiazzaExchange pe : courses){
             if (pe.courseID.equals(userCourseID)){
                 postPE = pe;
-                postPE.unanswered.remove(p);
+                postPE.unansweredQueue.remove(p);
                 break;
             }
         }
