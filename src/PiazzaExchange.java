@@ -239,7 +239,7 @@ public class PiazzaExchange {
         this.posts.add(p);
 
         ArrayList<Post> postArr = this.keywordHash.get(p.getKeyword());
-        if (postArr == null){
+        if (postArr.size() == 0){
             postArr = new ArrayList<>();
             postArr.add(p);
             this.keywordHash.put(p.getKeyword(), postArr);
