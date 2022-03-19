@@ -81,6 +81,7 @@ public class PiazzaExchangeTester {
         System.out.println(Arrays.toString(pe.computeKSimilarPosts("midterm", 20)));
 //        System.out.println(Arrays.toString(pe.computeKSimilarPosts("linked list", 7)));
         System.out.println(Arrays.toString(pe.computeKSimilarPosts("midterm", 20, 2)));
+        System.out.println(Arrays.toString(pe.computeKSimilarPosts("midterm", 20, 1)));
 // TODO: when a keyword isn't in the pe, throws exception; fix??
     }
 

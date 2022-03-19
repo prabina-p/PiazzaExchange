@@ -17,7 +17,7 @@ public class Student extends User{
             for (PiazzaExchange pe : courses){
                 if (pe.courseID.equals(userCourseID)){
                     postPE = pe;
-                    postPE.unansweredQueue.remove(p);
+                    postPE.unanswered.remove(p);
                     break;
                 }
             }
