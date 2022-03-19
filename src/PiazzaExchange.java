@@ -9,7 +9,6 @@ public class PiazzaExchange {
     ArrayList<User> users; // stores users enrolled in this course
     ArrayList<Post> posts; // stores all posts created in this course
     ArrayList<Post> unanswered; // stores unanswered posts(optional)
-//    PriorityQueue<Post> unansweredQueue; // stores
     String status; // status of the course (active/inactive)
     boolean selfEnroll; // whether the self-enrollment option is enabled
     private Forest keywordForest; // stores keywords and their corresponding posts in the structure of forest (mentioned in later sections)
@@ -33,7 +32,6 @@ public class PiazzaExchange {
         this.users = new ArrayList<>();
         this.posts = new ArrayList<>();
         this.unanswered = new ArrayList<>();
-//        this.unansweredQueue = new PriorityQueue<>(new PriorityQueueComparator());
         this.keywordForest = new Forest();
         this.initializeForest();
         this.keywordHash = new HashMap<>();
@@ -59,7 +57,6 @@ public class PiazzaExchange {
         }
         this.posts = new ArrayList<>();
         this.unanswered = new ArrayList<>();
-//        this.unansweredQueue = new PriorityQueue<>(new PriorityQueueComparator());
         this.keywordForest = new Forest();
         this.initializeForest();
         this.keywordHash = new HashMap<>();
@@ -247,18 +244,6 @@ public class PiazzaExchange {
             postArr.add(p);
             this.keywordHash.put(p.getKeyword(), postArr);
         }
-
-//        ArrayList<Post> postArr = this.keywordHash.get(p.getKeyword());
-//        if (postArr== null){
-//            postArr = new ArrayList<>();
-//            postArr.add(p);
-//            this.keywordHash.put(p.getKeyword(), postArr);
-//        }
-//        else {
-//            ArrayList<Post> posts = this.keywordHash.remove(p.getKeyword());
-//            posts.add(p);
-//            this.keywordHash.put(p.getKeyword(), posts);
-//        }
         u.posts.add(p);
         u.numOfPostSubmitted++;
         this.keywordForest.insert(p);
@@ -295,24 +280,11 @@ public class PiazzaExchange {
      * @return the post array that contains every single post that has the keyword
      */
     public Post[] retrievePost(String keyword){
-//        ArrayList<Post> userPostsArr = new ArrayList<>();;
-//        for (Post post : this.posts){
-//            if (post.getKeyword().equals(keyword)){`
-//                userPostsArr.add(post);
-//            }
-//        }
-//        Post[] thisUserPosts = new Post[userPostsArr.size()];
-//        for (int i = 0; i < thisUserPosts.length; i++){
-//            thisUserPosts[i] = userPostsArr.get(i);
-//        }
-//        return thisUserPosts;
-
         if (!this.keywordHash.containsKey(keyword)){
             return null;
         }
         ArrayList<Post> keywordPosts = this.keywordHash.get(keyword);
         return keywordPosts.toArray(new Post[0]);
-//        this.keywordHash
     }
 
     /**
@@ -358,15 +330,6 @@ public class PiazzaExchange {
      * @return the Post with the highest urgency rating
      */
     public Post computeMostUrgentQuestion() {
-//        if (unansweredQueue.size() == 0){
-//            return null;
-//        }
-//        PriorityQueue<Post> queueToComputeUrgentQ = new PriorityQueue<>(new PriorityQueueComparator());
-//        while (!unansweredQueue.isEmpty()){
-//            queueToComputeUrgentQ.add(unansweredQueue.remove());
-//        }
-//        this.unansweredQueue = queueToComputeUrgentQ;
-//        return unansweredQueue.peek();
         int mostUrgent = 0;
         Post mostUrgentPost = null;
         if (this.unanswered.size() == 0){
@@ -390,25 +353,6 @@ public class PiazzaExchange {
      * @throws OperationDeniedException when the operation is denied
      */
     public Post[] computeTopKUrgentQuestion(int k) throws OperationDeniedException{
-//        if (k > this.unanswered.size()){
-//            throw new OperationDeniedException();
-//        }
-//        PriorityQueue<Post> queueToComputeKUrgentQ = new PriorityQueue<>(new PriorityQueueComparator());
-//        PriorityQueue<Post> queueToRemoveQ = new PriorityQueue<>(new PriorityQueueComparator());
-//        while (!this.unanswered.isEmpty()){
-//            queueToComputeKUrgentQ.add(this.unanswered.remove());
-//        }
-//        this.unansweredQueue = queueToComputeKUrgentQ;
-//        Post[] kUrgentPostArr = new Post[k];
-//        for (int i = 0; i < k; i++){
-//            Post urgentQ = this.unansweredQueue.remove();
-//            kUrgentPostArr[i] = urgentQ;
-//            queueToRemoveQ.add(urgentQ);
-//        }
-//        while(!queueToRemoveQ.isEmpty()){
-//            this.unansweredQueue.add(queueToRemoveQ.remove());
-//        }
-//        return kUrgentPostArr;
         if (k > this.unanswered.size()){
             throw new OperationDeniedException();
         }
@@ -614,7 +558,7 @@ public class PiazzaExchange {
             return null;
         }
         thisQueue.add(parentNode);
-        int numOfLevel = -1; // TODO: verify that root node level is 1
+        int numOfLevel = -1;
         while (!thisQueue.isEmpty() && similarPostsArr.size() < k && numOfLevel < level){
             numOfLevel++;
             for (Forest.InternalNode node : thisQueue){
@@ -622,7 +566,9 @@ public class PiazzaExchange {
             }
             for (Forest.InternalNode node : thisQueue){
                 for (Post post : node.getPosts()){
-                    if (similarPostsArr.size() >= k) break;
+                    if (similarPostsArr.size() >= k) {
+                        break;
+                    }
                     similarPostsArr.add(post);
                 }
             }
