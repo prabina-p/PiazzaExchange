@@ -1,8 +1,4 @@
-import javafx.geometry.Pos;
-import org.junit.Test;
-
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -17,6 +13,8 @@ public class PiazzaExchange {
     String status; // status of the course (active/inactive)
     boolean selfEnroll; // whether the self-enrollment option is enabled
     private Forest keywordForest; // stores keywords and their corresponding posts in the structure of forest (mentioned in later sections)
+    HashMap<String, ArrayList<Post>> keywordHash;
+
 
     private static final String STATS_STRING = "%s submitted %d posts, answered %d posts, received %d endorsements\n";
 
@@ -38,6 +36,7 @@ public class PiazzaExchange {
         this.unansweredQueue = new PriorityQueue<>(new PriorityQueueComparator());
         this.keywordForest = new Forest();
         this.initializeForest();
+        this.keywordHash = new HashMap<>();
     }
 
     //is there a reason why we don't combine these two constructors?
@@ -63,6 +62,7 @@ public class PiazzaExchange {
         this.unansweredQueue = new PriorityQueue<>(new PriorityQueueComparator());
         this.keywordForest = new Forest();
         this.initializeForest();
+        this.keywordHash = new HashMap<>();
     }
 
     public Forest getKeywordForest() {
@@ -237,6 +237,18 @@ public class PiazzaExchange {
             throw new OperationDeniedException();
         }
         this.posts.add(p);
+
+        ArrayList<Post> postArr = this.keywordHash.get(p.getKeyword());
+        if (postArr == null){
+            postArr = new ArrayList<>();
+            postArr.add(p);
+            keywordHash.put(p.getKeyword(), postArr);
+        }
+        else {
+            ArrayList<Post> posts = this.keywordHash.remove(p.getKeyword());
+            posts.add(p);
+            this.keywordHash.put(p.getKeyword(), posts);
+        }
         u.posts.add(p);
         u.numOfPostSubmitted++;
         this.keywordForest.insert(p);
@@ -273,17 +285,19 @@ public class PiazzaExchange {
      * @return the post array that contains every single post that has the keyword
      */
     public Post[] retrievePost(String keyword){
-        ArrayList<Post> userPostsArr = new ArrayList<>();;
-        for (Post post : this.posts){
-            if (post.getKeyword().equals(keyword)){
-                userPostsArr.add(post);
-            }
-        }
-        Post[] thisUserPosts = new Post[userPostsArr.size()];
-        for (int i = 0; i < thisUserPosts.length; i++){
-            thisUserPosts[i] = userPostsArr.get(i);
-        }
-        return thisUserPosts;
+//        ArrayList<Post> userPostsArr = new ArrayList<>();;
+//        for (Post post : this.posts){
+//            if (post.getKeyword().equals(keyword)){`
+//                userPostsArr.add(post);
+//            }
+//        }
+//        Post[] thisUserPosts = new Post[userPostsArr.size()];
+//        for (int i = 0; i < thisUserPosts.length; i++){
+//            thisUserPosts[i] = userPostsArr.get(i);
+//        }
+//        return thisUserPosts;
+        return this.keywordHash.get(keyword).toArray(new Post[0]);
+//        this.keywordHash
     }
 
     /**
@@ -556,8 +570,36 @@ public class PiazzaExchange {
      * Forest of tree of BST and store key using HashMap.
      */
     public Post[] computeKSimilarPosts(String keyword, int k, int level) {
-        // TODO; not needed for checkpoint
-        return null;
+        keyword = keyword.toLowerCase();
+        ArrayList<Post> similarPostsArr = new ArrayList<>();
+        Queue<Forest.InternalNode> thisQueue = new LinkedList<>();
+        Queue<Forest.InternalNode> childQueue = new LinkedList<>();
+        Forest.InternalNode parentNode = this.keywordForest.nodeLookUp(keyword);
+        if (parentNode == null) {
+            return null;
+        }
+        thisQueue.add(parentNode);
+        int numOfLevel = 1; // TODO: verify that root node level is 1
+        while (!thisQueue.isEmpty() && similarPostsArr.size() < k && numOfLevel < level){
+            numOfLevel++;
+            for (Forest.InternalNode node : thisQueue){
+                childQueue.addAll(node.getChildren());
+            }
+            for (Forest.InternalNode node : thisQueue){
+                for (Post post : node.getPosts()){
+                    if (similarPostsArr.size() >= k) break;
+                    similarPostsArr.add(post);
+                }
+            }
+            thisQueue.clear();
+            thisQueue.addAll(childQueue);
+            childQueue.clear();
+        }
+        Post[] kSimilarPosts = new Post[k];
+        for (int i = 0; i < similarPostsArr.size(); i++){
+            kSimilarPosts[i] = similarPostsArr.get(i);
+        }
+        return kSimilarPosts;
     }
 
     /**

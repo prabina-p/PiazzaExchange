@@ -170,7 +170,7 @@ public class Forest {
      * @param children the array of children node's keys
      */
     public void addConnection(String parent, String[] children) {
-        InternalNode parentNode = nodeLookUp(parent);
+        InternalNode parentNode = nodeLookUp(parent.toLowerCase());
         if (parentNode == null) {
             this.insert(parent);
             parentNode = nodeLookUp(parent);
