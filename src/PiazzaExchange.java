@@ -237,18 +237,28 @@ public class PiazzaExchange {
             throw new OperationDeniedException();
         }
         this.posts.add(p);
-
-        ArrayList<Post> postArr = this.keywordHash.get(p.getKeyword());
-        if (postArr.size() == 0){
-            postArr = new ArrayList<>();
-            postArr.add(p);
-            this.keywordHash.put(p.getKeyword(), postArr);
-        }
-        else {
+        if (this.keywordHash.containsKey(p.getKeyword())){
             ArrayList<Post> posts = this.keywordHash.remove(p.getKeyword());
             posts.add(p);
             this.keywordHash.put(p.getKeyword(), posts);
         }
+        else {
+            ArrayList<Post> postArr = new ArrayList<>();
+            postArr.add(p);
+            this.keywordHash.put(p.getKeyword(), postArr);
+        }
+
+//        ArrayList<Post> postArr = this.keywordHash.get(p.getKeyword());
+//        if (postArr== null){
+//            postArr = new ArrayList<>();
+//            postArr.add(p);
+//            this.keywordHash.put(p.getKeyword(), postArr);
+//        }
+//        else {
+//            ArrayList<Post> posts = this.keywordHash.remove(p.getKeyword());
+//            posts.add(p);
+//            this.keywordHash.put(p.getKeyword(), posts);
+//        }
         u.posts.add(p);
         u.numOfPostSubmitted++;
         this.keywordForest.insert(p);
@@ -296,10 +306,12 @@ public class PiazzaExchange {
 //            thisUserPosts[i] = userPostsArr.get(i);
 //        }
 //        return thisUserPosts;
-        if (this.keywordHash.get(keyword).size() == 0){
+
+        if (!this.keywordHash.containsKey(keyword)){
             return null;
         }
-        return this.keywordHash.get(keyword).toArray(new Post[0]);
+        ArrayList<Post> keywordPosts = this.keywordHash.get(keyword);
+        return keywordPosts.toArray(new Post[0]);
 //        this.keywordHash
     }
 
